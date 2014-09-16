@@ -1,0 +1,182 @@
+Degree and satisfaction with financial situation
+Introduction:
+Is there relationship between the highest level of education of a person and person’s satisfactionwith self financial situation? I want to know how education affects the human’s life and his #calmnessI think it is interesting question not only for me.
+Data:
+The original data is from the General Social Surveys from 1972 to 2012. The data was collected by asking survey’s question to English/Spanish speaking persons 18 years of age or older, living in the United States. The data was merged into one cumulative file provided by ICPSR (1). The data 
+used for this study is an modified extract by Coursera from that file, all missing value replaced by ‘NA’.
+
+The cases are the answers by one respondent to General Social Survey’s questions, and Case Identification and Year of survey.
+
+Because of surveys this is an observational study.
+
+I will use two categorical variables — degree and satfin.
+DEGREE is a highest degree of respondents. The question is “If finished 9th-12th grade: Did you ever get a high school diploma or a GED certificate?”
+SATFIN is a respondent’s SATISFACTION WITH his FINANCIAL SITUATION. The question is “We are interested in how people are getting along financially these days. So far as you and your family are concerned, would you say that you are pretty well satisfied with your present financial situation, more or less satisfied, or not satisfied at all?”
+
+The population of interest is the US population. The data contains the answers from English/Spanish speaking persons thus the findings from this analysis can not be generalized to that population but can be generalized to English/Spanish speaking adult population of the US. Potential sources of bias are Convenience sample (it can be difficult to survey some person) and Non-response (some persons don’t response on some question).
+
+The data can not be used to establish causal links between the variables of interest because of bias discussed above.
+
+Exploratory data analysis:
+The used variables can contain some empty value coded as NA. I decide cutoff those observation units
+The new dataset has 51498 observations of 3 variables. degree can contain 5 levels: “Lt High School”,“High School”,“Junior College”, “Bachelor”,“Graduate”.satfin can contain 3 levels: “Satisfied”, “More Or Less”, “Not At All Sat”.
+
+```{r}
+
+load(url("http://bit.ly/dasi_gss_data"))
+```
+Cutoff all NA's, the new dataset gss does not contain NA
+
+```{r}
+gss<- subset(gss, degree != 'NA' & satfin != 'NA', select = c(caseid, degree, satfin))
+```
+
+New dataset gss contains three variables with no NA's as values
+
+```{r}
+str(gss)
+nrow(gss)
+ncol(gss)
+```
+ 
+```{r width=90}
+
+summary(gss$degree)
+
+```
+ 
+
+```{r width=90}
+summary(gss$satfin)
+
+```
+ 
+```
+H0 (nothing going on): Satisfaction with financial situation and degree are independent.
+The exploratory data analysis suggests that satisfaction with self financial situation
+depends on degree of person.
+``` 
+```{r width=83}
+plot(gss$satfin ~ gss$degree, main="Degree vs Satisfaction with financial situation")
+
+```
+at least 5 expected cases.
+Inference:
+
+```{r}
+x <- by(gss$satfin,gss$degree,summary)
+y <- sapply(1:nrow(x),function(i) rbind(x[[i]]))
+dimnames(y) = list("Satisfaction" = names(x[[1]]),"Degree" = names(x))
+```
+The matrix is ready for chi-squared test. Satisfaction with financial situation do not vary by degree of person.
+HA (something going on): Satisfaction with financial situation and degree are dependent.
+Satisfaction with financial situation do vary by degree of person.
+print with sums
+
+```{r width=90}
+
+addmargins(y)
+```
+ 
+There are two categorical variables both with >2 levels thus chi-squared independence
+test should be used.
+The data met the conditions for the chi-square test:
+1. Independence: Sampled observations are independent, random sample, n < 10% of
+population, each case only contributes to one cell in the table.
+2. Sample size: Each particular scenario (i.e. cell) must have
+The expected counts under the null hypothesis
+```{r width=90}
+chisq.test(y)$expected
+``` 
+```{r}
+chisq.test(y)
+```
+ 
+
+
+Exact p-value = 1.2474 × 10-198 The p-value is so tiny that we reject the null hypothesis.
+
+Conclusion:
+These data provide convincing evidence that degree of person and his satisfaction of
+his financial situation are associated.
+But that is observational study so we can not conclude that gaining higher degree
+is making people more satisfied.
+Also there is possibility of existence of some confounders like life factors, e.g.
+age etc, that we don’t studied here.
+References:
+General Social Survey Cumulative File, 1972-2012 Coursera Extract, modified for Data
+Analysis and Statistical Inference course (Duke University), all missing values have
+been recoded to missing (NA), link to dataset – http://bit.ly/dasi_gss_data
+Original Cumulative File:
+Smith, Tom W., Michael Hout, and Peter V. Marsden. General Social Survey, 1972-2012
+[Cumulative File]. ICPSR34802-v1. Storrs, CT: Roper Center for Public Opinion Research,
+University of
+Connecticut /Ann Arbor, MI: Inter-university Consortium for Political and Social Research
+[distributors], 2013-09-11. doi:10.3886/ICPSR34802.v1 Persistent URL: http://doi.org/10.3886/ICPSR34802.v1
+
+Appendix:
+Below the data used for chi-squared independence test with totals:
+
+```{r width}
+
+addmargins(y)
+``` 
+And chunk of original data (two variables):
+
+```
+gss[1:50,c(1,12,72)]
+
+```
+```
+##    caseid         degree         satfin
+## 1       1       Bachelor Not At All Sat
+## 2       2 Lt High School   More Or Less
+## 3       3    High School      Satisfied
+## 4       4       Bachelor Not At All Sat
+## 5       5    High School      Satisfied
+## 6       6    High School   More Or Less
+## 7       7    High School   More Or Less
+## 8       8       Bachelor Not At All Sat
+## 9       9    High School   More Or Less
+## 10     10    High School Not At All Sat
+## 11     11    High School Not At All Sat
+## 12     12 Lt High School      Satisfied
+## 13     13 Lt High School      Satisfied
+## 14     14 Lt High School   More Or Less
+## 15     15 Lt High School      Satisfied
+## 16     16    High School   More Or Less
+## 17     17    High School      Satisfied
+## 18     18 Lt High School      Satisfied
+## 19     19       Bachelor   More Or Less
+## 20     20    High School      Satisfied
+## 21     21    High School      Satisfied
+## 22     22    High School      Satisfied
+## 23     23    High School      Satisfied
+## 24     24    High School Not At All Sat
+## 25     25       Bachelor      Satisfied
+## 26     26    High School      Satisfied
+## 27     27    High School   More Or Less
+## 28     28    High School   More Or Less
+## 29     29    High School   More Or Less
+## 30     30 Lt High School   More Or Less
+## 31     31 Lt High School   More Or Less
+## 32     32    High School Not At All Sat
+## 33     33       Bachelor      Satisfied
+## 34     34 Lt High School      Satisfied
+## 35     35    High School      Satisfied
+## 36     36    High School   More Or Less
+## 37     37    High School      Satisfied
+## 38     38 Lt High School      Satisfied
+## 39     39 Lt High School      Satisfied
+## 40     40    High School   More Or Less
+## 41     41 Lt High School      Satisfied
+## 42     42    High School Not At All Sat
+## 43     43 Lt High School      Satisfied
+## 44     44 Lt High School      Satisfied
+## 45     45 Lt High School   More Or Less
+## 46     46    High School      Satisfied
+## 47     47    High School      Satisfied
+## 48     48    High School      Satisfied
+## 49     49 Lt High School   More Or Less
+## 50     50 Lt High School   More Or Less
+```
